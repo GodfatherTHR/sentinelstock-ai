@@ -1,0 +1,16 @@
+node_modules
+.npm-cache
+.next
+out
+dist
+coverage
+__pycache__
+*.pyc
+.env
+.env.local
+.env.*.local
+!.env.example
+services/api/.venv
+.pytest_cache
+*.log
+New Text Document.txt
