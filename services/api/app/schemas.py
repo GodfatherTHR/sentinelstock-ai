@@ -86,11 +86,10 @@ class Supplier(BaseModel):
     id: str
     name: str
     region: str
-    on_time_rate: float
     lead_time_days: int
-    lead_time_variance_days: float
+    minimum_order_quantity: float
     active_products: int
-    capacity_status: Literal["available", "constrained"]
+    active: bool = True
 
 
 class Shipment(BaseModel):
@@ -104,6 +103,12 @@ class Shipment(BaseModel):
     risk_score: float
     latitude: float
     longitude: float
+    source: str | None = None
+
+
+class SalesPoint(BaseModel):
+    day: str
+    quantity: float
 
 
 class Explanation(BaseModel):
@@ -164,3 +169,107 @@ class SimulationResult(BaseModel):
     scenario: dict[str, float]
     deltas: dict[str, float]
     assumptions: list[str]
+
+
+class Vessel(BaseModel):
+    mmsi: int
+    name: str | None = None
+    call_sign: str | None = None
+    imo: int | None = None
+    ship_type_label: str | None = None
+    destination: str | None = None
+    draught: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    speed_knots: float | None = None
+    course_degrees: float | None = None
+    nav_status_label: str | None = None
+    observed_at: str | None = None
+
+
+class CropIndex(BaseModel):
+    scene_id: str
+    aoi_name: str
+    crop: str | None = None
+    observation_date: str
+    ndvi_mean: float
+    ndvi_p10: float
+    ndvi_p90: float
+    health_score: float
+    cloud_pixel_percentage: float
+    valid_pixel_percentage: float
+
+
+class AgriculturalObservation(BaseModel):
+    dataset_code: str
+    region: str
+    item: str
+    element: str
+    year: int
+    value: float
+    unit: str | None = None
+
+
+class FoodCatalogItem(BaseModel):
+    source: str
+    source_id: str
+    name: str
+    brand: str | None = None
+    category: str | None = None
+    allergens: list[str] = []
+    nutriscore_grade: str | None = None
+    nova_group: int | None = None
+    data_type: str | None = None
+
+
+class IngestionRun(BaseModel):
+    provider: str
+    dataset_code: str
+    status: str
+    rows_written: int
+    started_at: str
+    finished_at: str | None = None
+    error_message: str | None = None
+
+
+class ExternalSignals(BaseModel):
+    food_catalog_by_source: dict[str, int]
+    agricultural_observations: int
+    crop_indices: int
+    vessels: int
+    latest_runs: list[IngestionRun]
+
+
+class AuditEntry(BaseModel):
+    id: str
+    action: str
+    entity_type: str | None = None
+    entity_id: str | None = None
+    metadata: dict = {}
+    created_at: str
+    actor: str | None = None
+
+
+class PurchaseOrderRow(BaseModel):
+    id: str
+    status: str
+    supplier_name: str
+    warehouse_name: str
+    total_amount: float
+    created_at: str
+    expected_delivery_date: str | None = None
+
+
+class AgentAskRequest(BaseModel):
+    query: str = Field(min_length=3, max_length=300)
+
+
+class AgentAskResponse(BaseModel):
+    query: str
+    tool: str | None = None
+    arguments: dict = {}
+    summary: str
+    rows: list[dict] = []
+    confidence: float | None = None
+    reasoning: str | None = None
+    model: str

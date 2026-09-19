@@ -1,0 +1,5 @@
+psycopg[binary]>=3.1
+pytest>=8.0
+# Satellite crop-health indices (Sentinel-2 COG windowed reads).
+numpy>=1.26
+rasterio>=1.4

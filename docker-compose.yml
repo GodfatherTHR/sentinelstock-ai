@@ -33,3 +33,23 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+  connectors:
+    build:
+      context: ./services/connectors
+    environment:
+      # Hosted path: PostgREST with the service-role key (no database password).
+      SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      # Optional direct Postgres fallback. Set locally before `docker compose up`; never commit.
+      SUPABASE_DB_URL: ${SUPABASE_DB_URL:-}
+      INGEST_ORGANIZATION_ID: ${INGEST_ORGANIZATION_ID:-00000000-0000-0000-0000-000000000001}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      # Which sources the loop runs. Static archives are better run on demand:
+      # `docker compose run --rm connectors python -m app.worker all`
+      CONNECTOR_SOURCES: ${CONNECTOR_SOURCES:-maritime}
+      CONNECTOR_POLL_SECONDS: ${CONNECTOR_POLL_SECONDS:-3600}
+      FAOSTAT_DATASET: ${FAOSTAT_DATASET:-FBS}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy

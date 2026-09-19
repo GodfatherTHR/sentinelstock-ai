@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Protocol
+from typing import Any, Iterator, Mapping, Protocol, Sequence
+
+from .persistence import TableBatch
 
 
 class ProviderUnavailable(RuntimeError):
@@ -10,9 +12,12 @@ class ProviderUnavailable(RuntimeError):
 
 
 class ExternalDataProvider(Protocol):
-    provider_name: str
+    """Adapter seam for external datasets (see docs/architecture/system-architecture.md)."""
 
-    def pull(self, *, cursor: str | None = None) -> list[dict[str, Any]]: ...
+    provider_name: str
+    dataset_code: str
+
+    def pull(self, *, cursor: str | None = None, limit: int | None = None) -> Iterator[TableBatch]: ...
 
 
 class AgriculturalProvider(ExternalDataProvider, Protocol):
@@ -33,6 +38,31 @@ class SatelliteProvider(ExternalDataProvider, Protocol):
 
 class ConsumerSignalProvider(ExternalDataProvider, Protocol):
     """Privacy-preserving aggregate review/search/sales signal seam."""
+
+
+class BaseProvider:
+    """Shared behaviour for concrete adapters.
+
+    Subclasses implement :meth:`pull` as a generator of :class:`TableBatch` and update
+    ``self.cursor_after`` as they page through the source so a run can resume.
+    """
+
+    provider_name: str = "unknown"
+    dataset_code: str = "unknown"
+    primary_table: str = "unknown"
+
+    def __init__(self, *, organization_id: str | None = None) -> None:
+        self.organization_id = organization_id
+        self.cursor_after: str | None = None
+
+    def pull(self, *, cursor: str | None = None, limit: int | None = None) -> Iterator[TableBatch]:
+        raise NotImplementedError
+
+    def stamp(self, rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+        """Attribute rows to the configured organization (``None`` keeps them unowned)."""
+        if not self.organization_id:
+            return [dict(row) for row in rows]
+        return [{**row, "organization_id": self.organization_id} for row in rows]
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,46 @@
+services:
+  api:
+    build: ./services/api
+    image: sentinelstock-api:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      # 8000 is already used on this host, so the API is published on 8010.
+      - "8010:8000"
+    volumes:
+      # Cactus Needle downloads its engine + weights on first use; keep them across restarts.
+      - needle-cache:/root/.cache
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  forecasting:
+    build: ./services/forecasting
+    image: sentinelstock-forecasting:latest
+    restart: unless-stopped
+    ports:
+      - "8011:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Not started by default. Run connectors on demand or from cron:
+  #   docker compose run --rm connectors python -m app.worker all
+  #   docker compose run --rm connectors python -m app.worker maritime
+  connectors:
+    build: ./services/connectors
+    image: sentinelstock-connectors:latest
+    profiles: ["jobs"]
+    env_file: .env
+    volumes:
+      - connector-cache:/tmp/sentinelstock-connectors
+
+volumes:
+  needle-cache:
+  connector-cache:

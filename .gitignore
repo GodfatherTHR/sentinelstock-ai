@@ -11,6 +11,10 @@ __pycache__
 .env.*.local
 !.env.example
 services/api/.venv
+.venv
 .pytest_cache
 *.log
 New Text Document.txt
+CREDENTIALS.md
+.commandcode/
+.puku/

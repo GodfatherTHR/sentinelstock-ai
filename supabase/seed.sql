@@ -13,13 +13,13 @@ values
   ('00000000-0000-0000-0000-000000000104', '00000000-0000-0000-0000-000000000001', 'Sylhet East', 'Sylhet', 24.8949, 91.8687, 42000, 'ambient + chilled')
 on conflict (id) do update set name = excluded.name, capacity = excluded.capacity;
 
-insert into public.products (id, organization_id, sku, name, category, unit, shelf_life_days, is_perishable, temperature_zone)
+insert into public.products (id, organization_id, sku, name, category, unit, shelf_life_days, is_perishable, temperature_zone, unit_cost)
 values
-  ('00000000-0000-0000-0000-000000001001', '00000000-0000-0000-0000-000000000001', 'OIL-1L-SUN', 'Sunflower Oil 1L', 'Cooking Oil', 'case', 365, false, 'ambient'),
-  ('00000000-0000-0000-0000-000000001002', '00000000-0000-0000-0000-000000000001', 'RICE-5KG-BAS', 'Basmati Rice 5kg', 'Staples', 'bag', 540, false, 'ambient'),
-  ('00000000-0000-0000-0000-000000001003', '00000000-0000-0000-0000-000000000001', 'MILK-1L-UHT', 'UHT Milk 1L', 'Dairy', 'case', 180, true, 'chilled'),
-  ('00000000-0000-0000-0000-000000001004', '00000000-0000-0000-0000-000000000001', 'DAL-1KG-RED', 'Red Lentils 1kg', 'Staples', 'bag', 360, false, 'ambient')
-on conflict (id) do update set name = excluded.name, category = excluded.category;
+  ('00000000-0000-0000-0000-000000001001', '00000000-0000-0000-0000-000000000001', 'OIL-1L-SUN', 'Sunflower Oil 1L', 'Cooking Oil', 'case', 365, false, 'ambient', 38.00),
+  ('00000000-0000-0000-0000-000000001002', '00000000-0000-0000-0000-000000000001', 'RICE-5KG-BAS', 'Basmati Rice 5kg', 'Staples', 'bag', 540, false, 'ambient', 22.00),
+  ('00000000-0000-0000-0000-000000001003', '00000000-0000-0000-0000-000000000001', 'MILK-1L-UHT', 'UHT Milk 1L', 'Dairy', 'case', 180, true, 'chilled', 22.00),
+  ('00000000-0000-0000-0000-000000001004', '00000000-0000-0000-0000-000000000001', 'DAL-1KG-RED', 'Red Lentils 1kg', 'Staples', 'bag', 360, false, 'ambient', 22.00)
+on conflict (id) do update set name = excluded.name, category = excluded.category, unit_cost = excluded.unit_cost;
 
 insert into public.inventory (warehouse_id, product_id, quantity, reserved, incoming, reorder_point, safety_stock, average_daily_demand, stockout_probability)
 values
